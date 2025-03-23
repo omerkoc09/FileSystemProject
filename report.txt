@@ -1,0 +1,278 @@
+# Secure File and Directory Management System Report
+
+## 1. Title Page
+
+Student Information:
+- Student Name: Ömer Faruk Koç
+- Student ID: 210104004061
+- Course: CSE344 Operating Systems
+- Assignment 1 
+
+## 2. Introduction
+
+This project is a secure file and directory management system implemented in C programming language. It provides a set of functionalities to safely perform common file and directory operations without using the stdio.h library, which was a significant design constraint.
+
+The primary objectives of the project include:
+- Providing basic file and directory operations (creation, listing, reading, modifying, deletion)
+- Implementing file locking mechanisms to ensure safe file operations
+- Executing critical operations using child processes to maintain system security
+- Developing alternative solutions to avoid dependencies on stdio.h library functions
+- Maintaining comprehensive logs for system accountability and traceability
+
+The application features a command-line interface where users can issue specific commands to perform various file and directory operations. The results and error messages are communicated to the user and also stored in a log file for future reference.
+
+## 3. Code Explanation
+
+### 3.1. Project Structure
+
+The project consists of the following source files:
+
+- **file_system.h**: Contains core data structures, constants, and common function declarations
+- **main.c**: Main program entry point and command processing logic
+- **file_operations.c**: Functions for file-related operations
+- **directory_operations.c**: Functions for directory-related operations
+- **logger.c**: Logging and log viewing functionalities
+- **utils.c**: Helper functions and general utilities
+
+### 3.2. Core Data Structures and Definitions
+
+The system uses several key data structures:
+
+- Error codes (ErrorCode enum): Define various error conditions like SUCCESS, ERROR_FILE_EXISTS, ERROR_FILE_NOT_FOUND, etc.
+- Command types (CommandType enum): Define the different operations supported by the system
+- Command structure: Contains the command type and arguments for passing between functions
+
+### 3.3. Main Program Flow
+
+The `main.c` file contains the entry point for the application. It handles the initialization of the log system, parsing of command-line arguments, and dispatching the appropriate functions based on the user's command.
+
+The main function:
+1. Initializes the log file
+2. Parses command-line arguments
+3. Determines the appropriate function to call based on the command
+4. Executes the function
+5. Reports any errors or success to the user
+6. Returns appropriate exit code
+
+### 3.4. File Operations
+
+#### 3.4.1. File Creation (createFile)
+
+This function creates a new file with the specified name and writes the creation timestamp as its initial content.
+
+The implementation includes:
+- Checking if the file already exists
+- Creating the file with appropriate permissions
+- Locking the file for exclusive access
+- Writing the creation timestamp to the file
+- Unlocking and closing the file
+- Logging the operation
+
+#### 3.4.2. File Reading (readFile)
+
+This function reads and displays the contents of a specified file.
+
+Key steps include:
+- Verifying the file exists
+- Creating a child process to read the file
+- Reading and displaying the file contents
+- Proper cleanup and error handling
+- Logging the operation
+
+#### 3.4.3. File Appending (appendToFile)
+
+This function appends new content to an existing file.
+
+Implementation details:
+- Checking if the file exists
+- Opening the file in append mode
+- Locking the file
+- Appending the new content
+- Unlocking and closing the file
+- Logging the operation
+
+#### 3.4.4. File Deletion (deleteFile)
+
+This function deletes the specified file securely.
+
+It works by:
+- Verifying the file exists
+- Creating a child process to delete the file
+- Waiting for the child process to complete
+- Verifying the deletion was successful
+- Logging the operation
+
+### 3.5. Directory Operations
+
+#### 3.5.1. Directory Creation (createDir)
+
+This function creates a new directory with the specified name.
+
+Implementation includes:
+- Checking if a file or directory with the same name exists
+- Creating the directory with appropriate permissions
+- Logging the operation
+
+#### 3.5.2. Directory Listing (listDir)
+
+This function lists the contents of a specified directory, showing both files and subdirectories.
+
+The implementation:
+- Verifies the directory exists
+- Creates a child process to list the directory contents
+- Reads the directory entries
+- Formats and displays the entries, distinguishing between files and directories
+- Logs the operation
+
+#### 3.5.3. Listing Files by Extension (listFilesByExtension)
+
+This function lists only the files with a specified extension in a directory.
+
+Key steps:
+- Verifying the directory exists
+- Creating a child process
+- Reading directory entries
+- Filtering files based on the specified extension
+- Displaying matching files
+- Logging the operation
+
+#### 3.5.4. Directory Deletion (deleteDir)
+
+This function deletes an empty directory.
+
+Implementation details:
+- Verifying the directory exists
+- Checking if the directory is empty
+- Creating a child process to delete the directory
+- Verifying the deletion was successful
+- Logging the operation
+
+### 3.6. Logging System
+
+#### 3.6.1. Log Initialization (initializeLogFile)
+
+This function initializes the log file for recording system activities.
+
+Implementation:
+- Creating or opening the log file
+- Setting appropriate permissions
+- Closing the file and returning success or error status
+
+#### 3.6.2. Log Message Recording (logMessage)
+
+This function adds entries to the log file.
+
+Key steps include:
+- Getting the current timestamp
+- Formatting the log message with timestamp and log type
+- Opening the log file in append mode
+- Locking the file for exclusive access
+- Writing the log message
+- Unlocking and closing the file
+
+#### 3.6.3. Log Viewing (showLogs)
+
+This function displays the contents of the log file.
+
+Implementation:
+- Checking if the log file exists
+- Opening and reading the log file
+- Displaying the contents
+- Logging the log-viewing operation itself
+
+### 3.7. Utility Functions
+
+#### 3.7.1. Command Parsing (parseCommand)
+
+This function parses command-line arguments into a Command structure.
+
+Implementation details:
+- Validating arguments
+- Determining command type based on the first argument
+- Filling in command parameters based on additional arguments
+- Returning success or appropriate error code
+
+#### 3.7.2. String Formatting (string_format)
+
+This is a custom implementation to replace the snprintf function from stdio.h. It formats strings with basic support for %s (string) and %d (integer) format specifiers.
+
+This function:
+- Processes the format string character by character
+- Handles format specifiers (%s, %d, %%)
+- Safely copies the formatted output to the buffer
+- Ensures proper null termination
+- Returns the length of the formatted string
+
+#### 3.7.3. File Existence Checking (fileExists)
+
+This function checks if a file or directory exists using the stat() function.
+
+#### 3.7.4. Directory Checking (isDirectory)
+
+This function checks if a path refers to a directory using the stat() function and S_ISDIR macro.
+
+### 3.8. Avoiding stdio.h
+
+A key challenge in this project was implementing all functionality without using the stdio.h library. This was accomplished by:
+
+1. Replacing printf with write() to STDOUT_FILENO
+2. Replacing fprintf with write() to appropriate file descriptors
+3. Implementing string_format to replace snprintf/sprintf
+4. Using open(), read(), write(), close() instead of fopen(), fread(), etc.
+5. Using low-level POSIX functions throughout the codebase
+
+## 4. Screenshots
+
+### 4.1. Creating Files and Directories
+[Screenshots of createFile and createDir commands]
+
+### 4.2. Listing Directory Contents
+[Screenshots of listDir and listFilesByExtension commands]
+
+### 4.3. Reading and Modifying Files
+[Screenshots of readFile and appendToFile commands]
+
+### 4.4. Deleting Files and Directories
+[Screenshots of deleteFile and deleteDir commands]
+
+### 4.5. Viewing Logs
+[Screenshot of showLogs command]
+
+### 4.6. Help Command
+[Screenshot of help command]
+
+## 5. Conclusion
+
+### 5.1. Challenges Faced
+
+1. **Avoiding stdio.h Library**: One of the most significant challenges was implementing a file and directory management system without using the stdio.h library, which traditionally provides crucial functions for input/output operations.
+
+2. **Implementing Safe File Operations**: Ensuring thread-safe file operations by implementing file locking mechanisms required careful consideration of race conditions and synchronization issues.
+
+3. **Child Process Management**: Using fork() to create child processes for certain operations introduced complexity in error handling and communication between parent and child processes.
+
+4. **Custom String Formatting**: Implementing a replacement for snprintf() without using stdio.h required significant effort to handle different format specifiers correctly.
+
+### 5.2. Solutions Implemented
+
+1. **Alternative I/O Functions**: We used lower-level POSIX functions like open(), read(), write(), and close() instead of higher-level stdio.h functions.
+
+2. **File Locking Mechanism**: We implemented file locking using fcntl() to ensure exclusive access during critical operations.
+
+3. **Fork-based Operations**: Critical operations were executed in child processes with proper status checking in the parent process.
+
+4. **Custom string_format Function**: We created a simplified string formatting function that supports basic format specifiers necessary for the application.
+
+### 5.3. Final Thoughts
+
+This project demonstrates how to implement a secure file and directory management system using only low-level POSIX functions, avoiding the standard I/O library. The approach provides better control over file operations and security, at the cost of having to implement some functionality manually.
+
+The use of child processes for potentially risky operations provides an additional layer of security, as any failures are contained within the child process without affecting the parent.
+
+Future improvements could include:
+- Support for recursive directory operations
+- More sophisticated file permissions management
+- Enhanced error reporting and recovery mechanisms
+- Support for file compression or encryption
+
+Overall, this project successfully implements a secure, robust file and directory management system while meeting the requirement of avoiding stdio.h library dependencies. 
